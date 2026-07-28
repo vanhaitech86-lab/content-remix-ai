@@ -1,0 +1,482 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================
+// AUTHENTICATION & USERS
+// =============================================
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String?
+  avatar        String?
+  role          String    @default("user") // user, admin
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts            Account[]
+  sessions            Session[]
+  projects            Project[]
+  platformConnections PlatformConnection[]
+  auditLogs           AuditLog[]
+  consentRecords      ConsentRecord[]
+  subscription        Subscription?
+  creditTransactions  CreditTransaction[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// =============================================
+// PROJECTS
+// =============================================
+
+model Project {
+  id          String   @id @default(uuid())
+  userId      String
+  title       String
+  description String?
+  status      String   @default("draft") // draft, in_progress, completed, archived
+  platform    String?  // tiktok, youtube_shorts, youtube_long
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceMedia     SourceMedia?
+  transcript      Transcript?
+  contentAnalysis ContentAnalysis?
+  scripts         Script[]
+  assets          Asset[]
+  renderJobs      RenderJob[]
+  publishingJobs  PublishingJob[]
+
+  @@map("projects")
+}
+
+// =============================================
+// SOURCE MEDIA
+// =============================================
+
+model SourceMedia {
+  id            String   @id @default(uuid())
+  projectId     String   @unique
+  sourceType    String   // url, upload, manual
+  sourceUrl     String?
+  platform      String?  // youtube, tiktok
+  videoId       String?
+  title         String?
+  duration      Int?     // seconds
+  language      String?
+  isPublic      Boolean  @default(true)
+  filePath      String?
+  fileName      String?
+  fileSize      Int?
+  mimeType      String?
+  metadata      String?  // JSON string
+  consentGiven  Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("source_media")
+}
+
+// =============================================
+// TRANSCRIPTS
+// =============================================
+
+model Transcript {
+  id              String   @id @default(uuid())
+  projectId       String   @unique
+  fullText        String
+  language        String?
+  source          String   // api, stt, manual, file
+  confidence      Float?
+  status          String   @default("completed") // queued, processing, needs_review, completed, failed, cancelled
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  project  Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  segments TranscriptSegment[]
+
+  @@map("transcripts")
+}
+
+model TranscriptSegment {
+  id           String  @id @default(uuid())
+  transcriptId String
+  segmentIndex Int
+  startTime    Float   // seconds
+  endTime      Float   // seconds
+  text         String
+  speaker      String?
+  confidence   Float?
+
+  transcript Transcript @relation(fields: [transcriptId], references: [id], onDelete: Cascade)
+
+  @@map("transcript_segments")
+}
+
+// =============================================
+// CONTENT ANALYSIS
+// =============================================
+
+model ContentAnalysis {
+  id              String   @id @default(uuid())
+  projectId       String   @unique
+  mainTopic       String?
+  targetAudience  String?
+  videoGoal       String?
+  hookOpening     String?
+  painPoints      String?  // JSON array
+  viewerInsights  String?  // JSON array
+  mainPromise     String?
+  arguments       String?  // JSON array
+  evidence        String?  // JSON array
+  narrativeRhythm String?
+  contentStructure String? // JSON
+  dominantEmotion String?
+  callToAction    String?
+  sectionTimings  String?  // JSON array
+  shotSuggestions String?  // JSON array
+  onScreenText    String?  // JSON array
+  status          String   @default("completed")
+  createdAt       DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("content_analyses")
+}
+
+// =============================================
+// SCRIPTS
+// =============================================
+
+model Script {
+  id              String   @id @default(uuid())
+  projectId       String
+  title           String
+  caption         String?
+  description     String?
+  hashtags        String?  // JSON array
+  thumbnailConcept String?
+  totalDuration   Int?     // seconds
+  similarityScore Float?
+  similarityDetails String? // JSON
+  config          String?  // JSON - generation settings
+  status          String   @default("draft")
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  project  Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  versions ScriptVersion[]
+  scenes   Scene[]
+
+  @@map("scripts")
+}
+
+model ScriptVersion {
+  id        String   @id @default(uuid())
+  scriptId  String
+  version   Int
+  data      String   // JSON - full script snapshot
+  createdAt DateTime @default(now())
+
+  script Script @relation(fields: [scriptId], references: [id], onDelete: Cascade)
+
+  @@map("script_versions")
+}
+
+model Scene {
+  id              String  @id @default(uuid())
+  scriptId        String
+  sceneIndex      Int
+  timeStart       String? // "00:00"
+  timeEnd         String? // "00:05"
+  duration        Int?    // seconds
+  shotDescription String?
+  dialogue        String?
+  onScreenText    String?
+  effects         String?
+  audio           String?
+  notes           String?
+  isLocked        Boolean @default(false)
+
+  script Script  @relation(fields: [scriptId], references: [id], onDelete: Cascade)
+  assets Asset[]
+
+  @@map("scenes")
+}
+
+// =============================================
+// ASSETS
+// =============================================
+
+model Asset {
+  id          String   @id @default(uuid())
+  projectId   String
+  sceneId     String?
+  type        String   // image, video, audio, music, voiceover, logo, watermark
+  source      String   // upload, stock, ai_generated
+  filePath    String?
+  fileName    String?
+  fileSize    Int?
+  mimeType    String?
+  url         String?
+  prompt      String?  // AI generation prompt
+  duration    Float?   // seconds for audio/video
+  width       Int?
+  height      Int?
+  metadata    String?  // JSON
+  createdAt   DateTime @default(now())
+
+  project Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  scene   Scene?       @relation(fields: [sceneId], references: [id], onDelete: SetNull)
+  license AssetLicense?
+
+  @@map("assets")
+}
+
+model AssetLicense {
+  id          String  @id @default(uuid())
+  assetId     String  @unique
+  licenseType String  // cc0, cc_by, royalty_free, user_owned, ai_generated
+  source      String?
+  attribution String?
+  url         String?
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@map("asset_licenses")
+}
+
+// =============================================
+// VOICEOVERS
+// =============================================
+
+model Voiceover {
+  id        String   @id @default(uuid())
+  projectId String
+  sceneId   String?
+  voice     String   // voice ID or name
+  language  String
+  gender    String?
+  speed     Float    @default(1.0)
+  emotion   String?
+  text      String
+  filePath  String?
+  duration  Float?
+  source    String   // ai, upload, clone
+  status    String   @default("queued")
+  createdAt DateTime @default(now())
+
+  @@map("voiceovers")
+}
+
+// =============================================
+// RENDERING
+// =============================================
+
+model RenderJob {
+  id          String   @id @default(uuid())
+  projectId   String
+  format      String   // tiktok, youtube_shorts, youtube, square
+  resolution  String   // 720p, 1080p
+  fps         Int      @default(30)
+  quality     String   @default("medium") // low, medium, high
+  codec       String   @default("h264")
+  embedSubs   Boolean  @default(true)
+  watermark   Boolean  @default(false)
+  progress    Int      @default(0)
+  status      String   @default("queued")
+  error       String?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+
+  project Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  video   RenderedVideo?
+
+  @@map("render_jobs")
+}
+
+model RenderedVideo {
+  id          String   @id @default(uuid())
+  renderJobId String   @unique
+  filePath    String
+  fileName    String
+  fileSize    Int?
+  duration    Float?
+  width       Int
+  height      Int
+  format      String
+  srtPath     String?
+  vttPath     String?
+  thumbnailPath String?
+  createdAt   DateTime @default(now())
+
+  renderJob RenderJob @relation(fields: [renderJobId], references: [id], onDelete: Cascade)
+
+  @@map("rendered_videos")
+}
+
+// =============================================
+// PLATFORM CONNECTIONS
+// =============================================
+
+model PlatformConnection {
+  id            String    @id @default(uuid())
+  userId        String
+  platform      String    // youtube, tiktok
+  accountName   String?
+  accountId     String?
+  accessToken   String?   // encrypted
+  refreshToken  String?   // encrypted
+  tokenExpiry   DateTime?
+  scopes        String?
+  isActive      Boolean   @default(true)
+  connectedAt   DateTime  @default(now())
+  lastUsedAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("platform_connections")
+}
+
+// =============================================
+// PUBLISHING
+// =============================================
+
+model PublishingJob {
+  id              String    @id @default(uuid())
+  projectId       String
+  platform        String    // youtube, tiktok
+  connectionId    String
+  title           String
+  description     String?
+  hashtags        String?   // JSON array
+  privacy         String    @default("private") // public, private, unlisted
+  scheduledAt     DateTime?
+  publishedAt     DateTime?
+  platformVideoId String?
+  platformUrl     String?
+  status          String    @default("queued")
+  error           String?
+  createdAt       DateTime  @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("publishing_jobs")
+}
+
+// =============================================
+// AUDIT & COMPLIANCE
+// =============================================
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String   // project.create, video.publish, consent.given, etc.
+  resource  String?
+  resourceId String?
+  details   String?  // JSON
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+}
+
+model ConsentRecord {
+  id          String   @id @default(uuid())
+  userId      String
+  projectId   String?
+  consentType String   // content_usage, voice_clone, data_processing
+  granted     Boolean
+  details     String?
+  grantedAt   DateTime @default(now())
+  revokedAt   DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("consent_records")
+}
+
+// =============================================
+// BILLING
+// =============================================
+
+model Subscription {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  plan            String    @default("free") // free, starter, pro, enterprise
+  status          String    @default("active") // active, cancelled, past_due
+  credits         Int       @default(100)
+  creditsUsed     Int       @default(0)
+  currentPeriodStart DateTime @default(now())
+  currentPeriodEnd   DateTime?
+  stripeCustomerId   String?
+  stripeSubId        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model CreditTransaction {
+  id          String   @id @default(uuid())
+  userId      String
+  amount      Int      // positive = add, negative = deduct
+  type        String   // subscription, purchase, usage, refund
+  description String?
+  balanceAfter Int
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("credit_transactions")
+}

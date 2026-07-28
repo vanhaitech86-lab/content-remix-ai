@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=file:./dev.db
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=dev-secret-change-in-production
+      - AI_TEXT_PROVIDER=mock
+      - STT_PROVIDER=mock
+      - TTS_PROVIDER=mock
+      - IMAGE_GEN_PROVIDER=mock
+      - STOCK_PROVIDER=mock
+      - FFMPEG_MOCK=true
+      - NODE_ENV=development
+    volumes:
+      - ./uploads:/app/uploads
+      - ./prisma/dev.db:/app/prisma/dev.db
+    restart: unless-stopped
+
+  # Uncomment for PostgreSQL in production
+  # db:
+  #   image: postgres:16-alpine
+  #   environment:
+  #     POSTGRES_USER: remix
+  #     POSTGRES_PASSWORD: remix_password
+  #     POSTGRES_DB: content_remix_ai
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+
+  # Uncomment for Redis queue in production
+  # redis:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"
+
+# volumes:
+#   postgres_data:
