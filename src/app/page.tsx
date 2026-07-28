@@ -1,4 +1,4 @@
-'use client';
+
 
 import Link from 'next/link';
 import { ArrowRight, Video, Scissors, AudioLines, Subtitles, LayoutTemplate, Share2, Sparkles } from 'lucide-react';

@@ -1,4 +1,4 @@
-'use client';
+
 
 import Link from 'next/link';
 import { Video, Sparkles, Coins, Upload, Plus } from 'lucide-react';
