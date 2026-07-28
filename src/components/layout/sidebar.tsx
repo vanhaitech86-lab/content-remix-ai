@@ -21,7 +21,7 @@ export function Sidebar() {
   const { sidebarOpen, setSidebarOpen } = useAppStore();
 
   const navItems = [
-    { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Dự án', href: '/projects', icon: FolderOpen },
     { name: 'Asset', href: '/assets', icon: ImageIcon },
     { name: 'Lịch sử', href: '/history', icon: History },

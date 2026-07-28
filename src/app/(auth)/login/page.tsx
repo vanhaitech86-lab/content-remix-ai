@@ -16,7 +16,7 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     setTimeout(() => {
-      router.push('/');
+      router.push('/dashboard');
     }, 1000);
   };
 
