@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import { 
   LayoutDashboard, 
   FolderOpen, 
@@ -10,15 +11,15 @@ import {
   Link as LinkIcon, 
   Settings, 
   LogOut,
-  Video
+  Video,
+  X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAppStore } from '@/store/app-store';
 import { Button } from '@/components/ui/button';
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { sidebarOpen, setSidebarOpen } = useAppStore();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -54,7 +55,7 @@ export function Sidebar() {
 
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+            const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
             return (
               <Link key={item.name} href={item.href}>
                 <div className={cn(

@@ -1,12 +1,12 @@
 'use client';
 
 import { Menu, Search, Bell, Sun, Moon } from 'lucide-react';
-import { useAppStore } from '@/store/app-store';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 export function Header() {
-  const { toggleSidebar, theme, toggleTheme } = useAppStore();
+  const [isDark, setIsDark] = useState(true);
 
   return (
     <header className="h-16 glass border-b border-white/5 flex items-center justify-between px-4 lg:px-8 z-30 sticky top-0">
@@ -15,12 +15,10 @@ export function Header() {
           variant="ghost" 
           size="icon" 
           className="lg:hidden text-slate-400 hover:text-white"
-          onClick={toggleSidebar}
         >
           <Menu className="w-5 h-5" />
         </Button>
         
-        {/* Breadcrumb / Title placeholder */}
         <div className="hidden sm:block">
           <h2 className="text-lg font-semibold text-slate-200">Dashboard</h2>
         </div>
@@ -40,9 +38,9 @@ export function Header() {
             variant="ghost" 
             size="icon" 
             className="text-slate-400 hover:text-white"
-            onClick={toggleTheme}
+            onClick={() => setIsDark(!isDark)}
           >
-            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </Button>
           
           <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white relative">

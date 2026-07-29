@@ -4,10 +4,10 @@ import { User, Key, Bell, Shield, Moon, Monitor } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useAppStore } from '@/store/app-store';
+import { useState } from 'react';
 
 export default function SettingsPage() {
-  const { theme, toggleTheme } = useAppStore();
+  const [isDark, setIsDark] = useState(true);
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
@@ -57,9 +57,9 @@ export default function SettingsPage() {
               <p className="font-medium text-slate-200">Chế độ nền tối</p>
               <p className="text-sm text-slate-400">Chuyển đổi giao diện sáng/tối</p>
             </div>
-            <Button variant="outline" onClick={toggleTheme} className="glass border-white/10">
-              {theme === 'dark' ? <Moon className="w-4 h-4 mr-2" /> : <Monitor className="w-4 h-4 mr-2" />}
-              {theme === 'dark' ? 'Đang bật' : 'Đang tắt'}
+            <Button variant="outline" onClick={() => setIsDark(!isDark)} className="glass border-white/10">
+              {isDark ? <Moon className="w-4 h-4 mr-2" /> : <Monitor className="w-4 h-4 mr-2" />}
+              {isDark ? 'Đang bật' : 'Đang tắt'}
             </Button>
           </div>
         </Card>
