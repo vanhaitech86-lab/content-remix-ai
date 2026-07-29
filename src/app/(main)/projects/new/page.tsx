@@ -14,13 +14,14 @@ export default function NewProjectPage() {
   const [platform, setPlatform] = useState('tiktok');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call
+    // Generate a mock project ID and redirect to the source workflow
+    const mockProjectId = `proj_${Date.now()}`;
     setTimeout(() => {
       setIsLoading(false);
-      router.push('/projects/editor/123'); // Redirect to editor mock
+      router.push(`/projects/${mockProjectId}/source`);
     }, 1500);
   };
 
