@@ -7,12 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Image as ImageIcon, Download, GripHorizontal, Edit3, ArrowRight, Wand2, Play } from 'lucide-react';
 
 const mockScenes = [
-  { id: 1, duration: '3s', visual: 'Quay cận mặt, biểu cảm giật mình', dialogue: 'Bạn đã bao giờ làm crash trình duyệt chỉ vì useEffect?', bg: 'from-purple-900/60 to-blue-900/60' },
-  { id: 2, duration: '7s', visual: 'Màn hình code đầy lỗi đỏ', dialogue: '90% anh em dev React đều từng dính chưởng này.', bg: 'from-red-900/50 to-gray-900' },
-  { id: 3, duration: '15s', visual: 'Vẽ sơ đồ đơn giản lên màn hình', dialogue: 'Bí kíp sống còn: Kiểm soát dependency array.', bg: 'from-blue-900/60 to-cyan-900/40' },
-  { id: 4, duration: '10s', visual: 'So sánh 2 đoạn code Before/After', dialogue: 'Refactor thành Custom Hook siêu sạch sẽ.', bg: 'from-green-900/50 to-gray-900' },
-  { id: 5, duration: '10s', visual: 'Người nói mỉm cười tự tin', dialogue: 'Nhớ 3 quy tắc vàng này nhé.', bg: 'from-purple-900/60 to-blue-900/60' },
-  { id: 6, duration: '5s', visual: 'Chỉ tay xuống dưới màn hình', dialogue: 'Lưu video và follow mình!', bg: 'from-gray-800 to-gray-900' },
+  { id: 1, duration: '3s', visual: 'Quay cận mặt, biểu cảm giật mình', dialogue: 'Bạn đã bao giờ làm crash trình duyệt chỉ vì useEffect?', bg: 'from-purple-900/60 to-blue-900/60', image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=500' },
+  { id: 2, duration: '7s', visual: 'Màn hình code đầy lỗi đỏ', dialogue: '90% anh em dev React đều từng dính chưởng này.', bg: 'from-red-900/50 to-gray-900', image: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&q=80&w=500' },
+  { id: 3, duration: '15s', visual: 'Vẽ sơ đồ đơn giản lên màn hình', dialogue: 'Bí kíp sống còn: Kiểm soát dependency array.', bg: 'from-blue-900/60 to-cyan-900/40', image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=500' },
+  { id: 4, duration: '10s', visual: 'So sánh 2 đoạn code Before/After', dialogue: 'Refactor thành Custom Hook siêu sạch sẽ.', bg: 'from-green-900/50 to-gray-900', image: 'https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?auto=format&fit=crop&q=80&w=500' },
+  { id: 5, duration: '10s', visual: 'Người nói mỉm cười tự tin', dialogue: 'Nhớ 3 quy tắc vàng này nhé.', bg: 'from-purple-900/60 to-blue-900/60', image: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&q=80&w=500' },
+  { id: 6, duration: '5s', visual: 'Chỉ tay xuống dưới màn hình', dialogue: 'Lưu video và follow mình!', bg: 'from-gray-800 to-gray-900', image: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&q=80&w=500' },
 ];
 
 export default function StoryboardPage({ params }: { params: { id: string } }) {
@@ -75,12 +75,19 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
                 </div>
 
                 {generatedIds.includes(scene.id) ? (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <Play className="w-6 h-6 text-green-400" />
+                  <div className="absolute inset-0 overflow-hidden group/image">
+                    <img src={scene.image} alt={scene.visual} className="w-full h-full object-cover opacity-80 transition-transform duration-700 group-hover/image:scale-110" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity duration-300">
+                      <div className="text-center">
+                        <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-2 border border-white/30 shadow-lg">
+                          <Play className="w-6 h-6 text-white ml-1" />
+                        </div>
+                        <span className="text-xs text-white font-medium drop-shadow-md">Xem trước</span>
                       </div>
-                      <span className="text-xs text-green-400 font-medium">Ảnh AI đã tạo</span>
+                    </div>
+                    {/* Badge "Đã tạo AI" */}
+                    <div className="absolute bottom-2 right-2 bg-green-500/90 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur shadow">
+                      ĐÃ TẠO AI
                     </div>
                   </div>
                 ) : generatingId === scene.id ? (
