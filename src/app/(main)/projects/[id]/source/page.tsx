@@ -14,6 +14,9 @@ export default function SourcePage({ params }: { params: { id: string } }) {
   const [consent, setConsent] = useState(false);
   const [url, setUrl] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [textFile, setTextFile] = useState<File | null>(null);
+  const [manualText, setManualText] = useState('');
 
   const handleAnalyze = () => {
     setIsAnalyzing(true);
@@ -22,6 +25,8 @@ export default function SourcePage({ params }: { params: { id: string } }) {
       router.push(`/projects/${params.id}/transcript`);
     }, 2000);
   };
+
+  const isFormValid = consent && (url.trim() !== '' || mediaFile !== null || textFile !== null || manualText.trim() !== '');
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -90,25 +95,59 @@ export default function SourcePage({ params }: { params: { id: string } }) {
             </TabsContent>
 
             <TabsContent value="upload" className="mt-0">
-              <div className="border-2 border-dashed border-white/10 rounded-xl p-12 flex flex-col items-center justify-center text-center bg-[#0F0B1A]/50 hover:bg-[#0F0B1A] transition-colors cursor-pointer">
-                <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center mb-4">
-                  <Upload className="h-8 w-8 text-blue-400" />
+              <label htmlFor="media-upload" className="block w-full">
+                <div className="border-2 border-dashed border-white/10 rounded-xl p-12 flex flex-col items-center justify-center text-center bg-[#0F0B1A]/50 hover:bg-[#0F0B1A] transition-colors cursor-pointer">
+                  <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center mb-4">
+                    <Upload className="h-8 w-8 text-blue-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-white mb-2">
+                    {mediaFile ? mediaFile.name : 'Kéo thả file video/audio vào đây'}
+                  </h3>
+                  <p className="text-sm text-gray-400 mb-6">
+                    {mediaFile ? `${(mediaFile.size / (1024 * 1024)).toFixed(2)} MB` : 'Hỗ trợ: MP4, MP3, WAV, M4A (Tối đa 500MB)'}
+                  </p>
+                  <span className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-white/10 hover:bg-white/5 shadow-sm h-9 px-4 py-2">
+                    {mediaFile ? 'Chọn file khác' : 'Chọn file từ máy tính'}
+                  </span>
+                  <input 
+                    id="media-upload" 
+                    type="file" 
+                    className="hidden" 
+                    accept="video/mp4,audio/mp3,audio/wav,audio/m4a"
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) setMediaFile(e.target.files[0]);
+                    }}
+                  />
                 </div>
-                <h3 className="text-lg font-medium text-white mb-2">Kéo thả file video/audio vào đây</h3>
-                <p className="text-sm text-gray-400 mb-6">Hỗ trợ: MP4, MP3, WAV, M4A (Tối đa 500MB)</p>
-                <Button variant="outline" className="border-white/10 hover:bg-white/5">Chọn file từ máy tính</Button>
-              </div>
+              </label>
             </TabsContent>
 
             <TabsContent value="transcript" className="mt-0">
-              <div className="border-2 border-dashed border-white/10 rounded-xl p-12 flex flex-col items-center justify-center text-center bg-[#0F0B1A]/50 hover:bg-[#0F0B1A] transition-colors cursor-pointer">
-                <div className="w-16 h-16 rounded-full bg-purple-500/10 flex items-center justify-center mb-4">
-                  <FileText className="h-8 w-8 text-purple-400" />
+              <label htmlFor="transcript-upload" className="block w-full">
+                <div className="border-2 border-dashed border-white/10 rounded-xl p-12 flex flex-col items-center justify-center text-center bg-[#0F0B1A]/50 hover:bg-[#0F0B1A] transition-colors cursor-pointer">
+                  <div className="w-16 h-16 rounded-full bg-purple-500/10 flex items-center justify-center mb-4">
+                    <FileText className="h-8 w-8 text-purple-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-white mb-2">
+                    {textFile ? textFile.name : 'Tải lên file phụ đề / văn bản'}
+                  </h3>
+                  <p className="text-sm text-gray-400 mb-6">
+                    {textFile ? `${(textFile.size / 1024).toFixed(2)} KB` : 'Hỗ trợ: SRT, VTT, TXT, DOCX'}
+                  </p>
+                  <span className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-white/10 hover:bg-white/5 shadow-sm h-9 px-4 py-2">
+                    {textFile ? 'Chọn file khác' : 'Chọn file từ máy tính'}
+                  </span>
+                  <input 
+                    id="transcript-upload" 
+                    type="file" 
+                    className="hidden" 
+                    accept=".srt,.vtt,.txt,.docx"
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) setTextFile(e.target.files[0]);
+                    }}
+                  />
                 </div>
-                <h3 className="text-lg font-medium text-white mb-2">Tải lên file phụ đề / văn bản</h3>
-                <p className="text-sm text-gray-400 mb-6">Hỗ trợ: SRT, VTT, TXT, DOCX</p>
-                <Button variant="outline" className="border-white/10 hover:bg-white/5">Chọn file từ máy tính</Button>
-              </div>
+              </label>
             </TabsContent>
 
             <TabsContent value="manual" className="mt-0">
@@ -117,6 +156,8 @@ export default function SourcePage({ params }: { params: { id: string } }) {
                 <Textarea 
                   placeholder="Dán kịch bản hoặc transcript của bạn vào đây..." 
                   className="min-h-[200px] bg-[#0F0B1A] border-white/10 text-white focus-visible:ring-purple-500 resize-y"
+                  value={manualText}
+                  onChange={(e) => setManualText(e.target.value)}
                 />
               </div>
             </TabsContent>
@@ -141,7 +182,7 @@ export default function SourcePage({ params }: { params: { id: string } }) {
             <div className="flex justify-end pt-2">
               <Button 
                 onClick={handleAnalyze} 
-                disabled={!consent || isAnalyzing}
+                disabled={!isFormValid || isAnalyzing}
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-8 h-12 shadow-[0_0_20px_rgba(124,58,237,0.3)] w-full sm:w-auto text-lg"
               >
                 {isAnalyzing ? (
