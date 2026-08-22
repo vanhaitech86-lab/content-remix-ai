@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Play, Pause, SkipBack, SkipForward, Volume2, Type, Music, Image as ImageIcon, Layers, Scissors, Mic, ArrowRight } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, Type, Music, Image as ImageIcon, Layers, Scissors, Mic, ArrowRight, MousePointer2, Video } from 'lucide-react';
 
 export default function EditorPage({ params }: { params: { id: string } }) {
   const router = useRouter();
