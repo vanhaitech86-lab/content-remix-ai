@@ -94,13 +94,30 @@ export default function EditorPage({ params }: { params: { id: string } }) {
           
           <div className="flex-1 flex items-center justify-center p-4">
             {/* The Video Canvas */}
-            <div className="aspect-[9/16] h-full max-h-[500px] w-full max-w-[281px] bg-gradient-to-br from-purple-900 to-gray-900 rounded-lg shadow-2xl border border-white/10 relative overflow-hidden flex items-center justify-center">
+            <div 
+              className="aspect-[9/16] h-full max-h-[500px] w-full max-w-[281px] bg-gradient-to-br from-purple-900 to-gray-900 rounded-lg shadow-2xl border border-white/10 relative overflow-hidden flex items-center justify-center cursor-pointer group"
+              onClick={() => setIsPlaying(!isPlaying)}
+            >
+              {/* Overlay Big Play Button */}
+              {!isPlaying && (
+                <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/30 transition-all duration-300">
+                  <div className="w-16 h-16 bg-purple-600/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(124,58,237,0.5)] group-hover:scale-110 transition-transform">
+                    <Play className="w-8 h-8 text-white ml-1" />
+                  </div>
+                </div>
+              )}
+
+              {/* Fake Video Background Animation when playing */}
+              {isPlaying && (
+                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=500')] bg-cover bg-center opacity-40 animate-pulse"></div>
+              )}
+
               <div className="text-center p-6 relative z-10">
                 <h1 className="text-2xl lg:text-3xl font-black text-white drop-shadow-lg leading-tight uppercase text-center stroke-black stroke-2" style={{textShadow: '2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000', whiteSpace: 'pre-line'}}>
                   {getPreviewTitle()}
                 </h1>
               </div>
-              <div className="absolute bottom-10 left-4 right-4 text-center">
+              <div className="absolute bottom-10 left-4 right-4 text-center z-20">
                 <span className="bg-yellow-400 text-black font-bold px-3 py-1 text-[11px] lg:text-xs rounded inline-block shadow-md">
                   {getSubtitleText()}
                 </span>
