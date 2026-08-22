@@ -5,22 +5,33 @@ import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Image as ImageIcon, Download, GripHorizontal, Edit3, ArrowRight, Wand2, Play } from 'lucide-react';
+import { useProjectStore } from '@/store/project-store';
 
-const mockScenes = [
-  { id: 1, duration: '3s', visual: 'Quay cận mặt, biểu cảm giật mình', dialogue: 'Bạn đã bao giờ làm crash trình duyệt chỉ vì useEffect?', bg: 'from-purple-900/60 to-blue-900/60', image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=500' },
-  { id: 2, duration: '7s', visual: 'Màn hình code đầy lỗi đỏ', dialogue: '90% anh em dev React đều từng dính chưởng này.', bg: 'from-red-900/50 to-gray-900', image: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&q=80&w=500' },
-  { id: 3, duration: '15s', visual: 'Vẽ sơ đồ đơn giản lên màn hình', dialogue: 'Bí kíp sống còn: Kiểm soát dependency array.', bg: 'from-blue-900/60 to-cyan-900/40', image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=500' },
-  { id: 4, duration: '10s', visual: 'So sánh 2 đoạn code Before/After', dialogue: 'Refactor thành Custom Hook siêu sạch sẽ.', bg: 'from-green-900/50 to-gray-900', image: 'https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?auto=format&fit=crop&q=80&w=500' },
-  { id: 5, duration: '10s', visual: 'Người nói mỉm cười tự tin', dialogue: 'Nhớ 3 quy tắc vàng này nhé.', bg: 'from-purple-900/60 to-blue-900/60', image: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&q=80&w=500' },
-  { id: 6, duration: '5s', visual: 'Chỉ tay xuống dưới màn hình', dialogue: 'Lưu video và follow mình!', bg: 'from-gray-800 to-gray-900', image: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&q=80&w=500' },
+const fallbackMockScenes = [
+  { id: '1', duration: '3s', visual: 'Quay cận mặt, biểu cảm giật mình', dialogue: 'Bạn đã bao giờ làm crash trình duyệt chỉ vì useEffect?', bg: 'from-purple-900/60 to-blue-900/60', image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=500' },
+  { id: '2', duration: '7s', visual: 'Màn hình code đầy lỗi đỏ', dialogue: '90% anh em dev React đều từng dính chưởng này.', bg: 'from-red-900/50 to-gray-900', image: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&q=80&w=500' },
+  { id: '3', duration: '15s', visual: 'Vẽ sơ đồ đơn giản lên màn hình', dialogue: 'Bí kíp sống còn: Kiểm soát dependency array.', bg: 'from-blue-900/60 to-cyan-900/40', image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=500' },
 ];
 
 export default function StoryboardPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const [generatingId, setGeneratingId] = useState<number | null>(null);
-  const [generatedIds, setGeneratedIds] = useState<number[]>([]);
+  const { script } = useProjectStore();
 
-  const handleGenerateImage = (id: number) => {
+  const displayScenes = script?.scenes && script.scenes.length > 0
+    ? script.scenes.map((s, i) => ({
+        id: s.id || String(i + 1),
+        duration: s.estimatedDuration ? `${s.estimatedDuration}s` : '5s',
+        visual: s.visualHook || 'Hình ảnh mô phỏng',
+        dialogue: s.narration || '',
+        bg: fallbackMockScenes[i % fallbackMockScenes.length].bg,
+        image: fallbackMockScenes[i % fallbackMockScenes.length].image,
+      }))
+    : fallbackMockScenes;
+
+  const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const [generatedIds, setGeneratedIds] = useState<string[]>([]);
+
+  const handleGenerateImage = (id: string) => {
     setGeneratingId(id);
     setTimeout(() => {
       setGeneratingId(null);
@@ -29,7 +40,7 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
   };
 
   const handleGenerateAll = () => {
-    mockScenes.forEach((scene, i) => {
+    displayScenes.forEach((scene, i) => {
       setTimeout(() => {
         setGeneratingId(scene.id);
         setTimeout(() => {
@@ -63,7 +74,7 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
 
       <div className="flex-1 overflow-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-4">
-          {mockScenes.map((scene, i) => (
+          {displayScenes.map((scene, i) => (
             <Card key={scene.id} className="bg-[#1A1533]/50 border-white/10 overflow-hidden group hover:border-purple-500/50 transition-all">
               {/* Thumbnail */}
               <div className={`aspect-video w-full relative bg-gradient-to-br ${scene.bg} border-b border-white/5 flex items-center justify-center`}>

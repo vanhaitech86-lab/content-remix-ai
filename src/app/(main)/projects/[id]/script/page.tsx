@@ -8,26 +8,62 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Settings2, Layout as LayoutIcon, Clock, History, Save, Check, ArrowRight, Sparkles, MessageSquare, Plus, Trash2, ChevronUp, ChevronDown, Unlock, RefreshCw } from 'lucide-react';
+import { useProjectStore } from '@/store/project-store';
 
 const mockScenes = [
-  { id: 1, time: '0:00 - 0:03', visual: 'Quay cận mặt, biểu cảm giật mình hoảng hốt.', dialogue: 'Bạn đã bao giờ làm crash trình duyệt chỉ vì một cái useEffect viết sai chưa?', text: 'Lỗi useEffect ám ảnh', effect: 'Zoom in nhanh, rung lắc nhẹ', sound: 'Hiệu ứng "Whoosh"' },
-  { id: 2, time: '0:03 - 0:10', visual: 'Chuyển cảnh nhanh sang màn hình code đầy lỗi đỏ.', dialogue: 'Đừng lo, 90% anh em dev React đều từng dính chưởng này khi mới học Hooks.', text: '90% Dev đều mắc phải', effect: 'Hiệu ứng Glitch chuyển cảnh', sound: 'Nhạc nền lofi beat' },
-  { id: 3, time: '0:10 - 0:25', visual: 'Vẽ sơ đồ đơn giản lên màn hình, chỉ tay giải thích.', dialogue: 'Bí kíp số 1: Luôn kiểm soát dependency array. Để trống = chạy 1 lần. Không có [] = infinite loop!', text: '[ ] = 1 Lần / No [ ] = Infinity', effect: 'Text pop up theo nhịp nói', sound: 'Tiếng pop khi chữ hiện' },
-  { id: 4, time: '0:25 - 0:35', visual: 'So sánh 2 đoạn code bên trái và phải màn hình.', dialogue: 'Hãy xem cách refactor đoạn code lộn xộn thành Custom Hook siêu sạch sẽ.', text: 'Before & After', effect: 'Chia đôi màn hình', sound: 'Tiếng ting thành công' },
-  { id: 5, time: '0:35 - 0:45', visual: 'Quay trở lại người nói, mỉm cười tự tin.', dialogue: 'Chỉ cần nhớ 3 quy tắc vàng này, bạn sẽ làm chủ React Hooks trong 1 nốt nhạc.', text: 'Làm chủ React Hooks', effect: 'Màu sắc tươi sáng hơn', sound: '' },
-  { id: 6, time: '0:45 - 0:50', visual: 'Chỉ tay xuống dưới màn hình.', dialogue: 'Lưu ngay video này lại và follow mình để học thêm về React!', text: 'Lưu & Follow!', effect: 'Hiệu ứng mũi tên chỉ xuống', sound: 'Tiếng chuông notification' },
+  { id: '1', time: '0:00 - 0:03', visual: 'Quay cận mặt, biểu cảm giật mình hoảng hốt.', dialogue: 'Bạn đã bao giờ làm crash trình duyệt chỉ vì một cái useEffect viết sai chưa?', text: 'Lỗi useEffect ám ảnh', effect: 'Zoom in nhanh, rung lắc nhẹ', sound: 'Hiệu ứng "Whoosh"' },
+  { id: '2', time: '0:03 - 0:10', visual: 'Chuyển cảnh nhanh sang màn hình code đầy lỗi đỏ.', dialogue: 'Đừng lo, 90% anh em dev React đều từng dính chưởng này khi mới học Hooks.', text: '90% Dev đều mắc phải', effect: 'Hiệu ứng Glitch chuyển cảnh', sound: 'Nhạc nền lofi beat' },
+  { id: '3', time: '0:10 - 0:25', visual: 'Vẽ sơ đồ đơn giản lên màn hình, chỉ tay giải thích.', dialogue: 'Bí kíp số 1: Luôn kiểm soát dependency array. Để trống = chạy 1 lần. Không có [] = infinite loop!', text: '[ ] = 1 Lần / No [ ] = Infinity', effect: 'Text pop up theo nhịp nói', sound: 'Tiếng pop khi chữ hiện' },
+  { id: '4', time: '0:25 - 0:35', visual: 'So sánh 2 đoạn code bên trái và phải màn hình.', dialogue: 'Hãy xem cách refactor đoạn code lộn xộn thành Custom Hook siêu sạch sẽ.', text: 'Before & After', effect: 'Chia đôi màn hình', sound: 'Tiếng ting thành công' },
+  { id: '5', time: '0:35 - 0:45', visual: 'Quay trở lại người nói, mỉm cười tự tin.', dialogue: 'Chỉ cần nhớ 3 quy tắc vàng này, bạn sẽ làm chủ React Hooks trong 1 nốt nhạc.', text: 'Làm chủ React Hooks', effect: 'Màu sắc tươi sáng hơn', sound: '' },
+  { id: '6', time: '0:45 - 0:50', visual: 'Chỉ tay xuống dưới màn hình.', dialogue: 'Lưu ngay video này lại và follow mình để học thêm về React!', text: 'Lưu & Follow!', effect: 'Hiệu ứng mũi tên chỉ xuống', sound: 'Tiếng chuông notification' },
 ];
 
 export default function ScriptPage({ params }: { params: { id: string } }) {
   const router = useRouter();
+  const { transcript, script, setScript } = useProjectStore();
+
   const [isGenerated, setIsGenerated] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [scenes] = useState(mockScenes);
+  const [scenes, setScenes] = useState(script?.scenes && script.scenes.length > 0 ? script.scenes as any[] : mockScenes);
   const [saved, setSaved] = useState(false);
 
   const handleGenerate = () => {
     setIsGenerating(true);
     setTimeout(() => {
+      let generatedScenes = mockScenes;
+      
+      // If we have an actual transcript, let's create a dynamic script block instead of the mock
+      if (transcript && transcript.text && transcript.text.length > 0) {
+        generatedScenes = [
+          {
+            id: '1',
+            time: '0:00 - 0:05',
+            visual: 'Hình ảnh / Video minh họa tương ứng với nội dung.',
+            dialogue: transcript.text.substring(0, 100) + (transcript.text.length > 100 ? '...' : ''),
+            text: 'Tiêu đề tự động',
+            effect: 'Hiển thị Pop-up',
+            sound: 'Nhạc nền nhẹ',
+          }
+        ];
+      }
+      
+      setScenes(generatedScenes);
+      setScript({
+        id: 'script_1',
+        projectId: params.id,
+        title: 'Kịch bản tự động',
+        scenes: generatedScenes.map((s, i) => ({
+          id: s.id,
+          order: i,
+          visualHook: s.visual,
+          narration: s.dialogue,
+          estimatedDuration: 5,
+          isLocked: false,
+        })),
+        estimatedTotalDuration: 50,
+      });
+
       setIsGenerating(false);
       setIsGenerated(true);
     }, 2500);
