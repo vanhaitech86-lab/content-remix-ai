@@ -1,11 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Play, Pause, SkipBack, SkipForward, Volume2, Type, Music, Image as ImageIcon, Video, Layers, Scissors, Mic, MousePointer2 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, Type, Music, Image as ImageIcon, Layers, Scissors, Mic, ArrowRight } from 'lucide-react';
 
-export default function EditorPage() {
+export default function EditorPage({ params }: { params: { id: string } }) {
+  const router = useRouter();
+  const [isPlaying, setIsPlaying] = useState(false);
   return (
     <div className="h-[calc(100vh-8rem)] flex flex-col bg-[#0F0B1A] rounded-xl border border-white/10 overflow-hidden">
       
@@ -149,6 +152,20 @@ export default function EditorPage() {
               <Clip start={0} width={800} color="bg-purple-600" label="Lofi Chill Beat.mp3" />
             </Track>
           </div>
+        </div>
+      </div>
+
+      {/* Navigation Footer */}
+      <div className="border-t border-white/10 px-6 py-3 flex justify-between items-center bg-[#0F0B1A] shrink-0">
+        <Button variant="outline" className="border-white/10" onClick={() => router.back()}>← Quay lại</Button>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-gray-500">Chỉnh sửa xong?</span>
+          <Button
+            onClick={() => router.push(`/projects/${params.id}/export`)}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:opacity-90 text-white px-8"
+          >
+            Tiếp theo: Xuất video <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
         </div>
       </div>
     </div>

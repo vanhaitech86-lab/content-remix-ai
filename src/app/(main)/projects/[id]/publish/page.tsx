@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,9 +11,21 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Youtube, Calendar, Clock, Globe, Lock, EyeOff, Share2, AlertCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 
-export default function PublishPage() {
+export default function PublishPage({ params }: { params: { id: string } }) {
   const [platform, setPlatform] = useState('youtube');
   const [scheduled, setScheduled] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isDone, setIsDone] = useState(false);
+  const router = useRouter();
+
+  const handlePublish = () => {
+    setIsPublishing(true);
+    setTimeout(() => {
+      setIsPublishing(false);
+      setIsDone(true);
+      setTimeout(() => router.push('/dashboard'), 3000);
+    }, 2500);
+  };
 
   return (
     <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8 pb-10">
@@ -168,6 +181,29 @@ export default function PublishPage() {
             Lưu ý: API Upload của YouTube và TikTok có giới hạn hàng ngày. Phiên bản này đang sử dụng Mock API để demo flow chức năng.
           </p>
         </div>
+
+        {/* Publish Action */}
+        {isDone ? (
+          <div className="mt-6 bg-green-500/10 border border-green-500/30 rounded-xl p-6 text-center">
+            <div className="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3 shadow-[0_0_20px_rgba(34,197,94,0.4)]">
+              <Share2 className="w-7 h-7 text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-1">Đăng tải thành công! 🎉</h3>
+            <p className="text-green-200/70 text-sm">Video đang được xử lý trên nền tảng. Đang chuyển về Dashboard...</p>
+          </div>
+        ) : (
+          <button
+            onClick={handlePublish}
+            disabled={isPublishing}
+            className="mt-6 w-full h-14 bg-gradient-to-r from-red-600 to-purple-600 hover:from-red-500 hover:to-purple-500 disabled:opacity-70 text-white font-bold text-lg rounded-xl transition-all shadow-lg flex items-center justify-center gap-3"
+          >
+            {isPublishing ? (
+              <><svg className="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg> Đang đăng tải...</>
+            ) : (
+              <><Share2 className="w-5 h-5" /> Đăng tải ngay lên {platform === 'youtube' ? 'YouTube Shorts' : 'TikTok'}</>
+            )}
+          </button>
+        )}
       </div>
     </div>
   );
