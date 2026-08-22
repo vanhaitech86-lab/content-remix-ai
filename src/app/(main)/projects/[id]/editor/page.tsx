@@ -5,12 +5,31 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Play, Pause, SkipBack, SkipForward, Volume2, Type, Music, Image as ImageIcon, Layers, Scissors, Mic, ArrowRight, MousePointer2, Video } from 'lucide-react';
+import { useProjectStore } from '@/store/project-store';
 
 export default function EditorPage({ params }: { params: { id: string } }) {
   const router = useRouter();
+  const { script } = useProjectStore();
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0); // in seconds
-  const maxTime = 50; // 50 seconds total for the mockup
+
+  // Calculate scene timings based on script
+  const scenes = script?.scenes && script.scenes.length > 0 ? script.scenes : [
+    { id: 'mock1', order: 0, visualHook: 'Quay cận mặt, biểu cảm giật mình', narration: 'Bạn đã bao giờ làm crash trình duyệt chỉ vì một cái useEffect viết sai chưa?', estimatedDuration: 5 },
+    { id: 'mock2', order: 1, visualHook: 'Màn hình code đầy lỗi đỏ', narration: 'Đừng lo, 90% anh em dev React đều từng dính chưởng này.', estimatedDuration: 5 }
+  ];
+
+  let currentStartTime = 0;
+  const sceneTimings = scenes.map((scene) => {
+    const duration = scene.estimatedDuration || 5;
+    const startTime = currentStartTime;
+    const endTime = startTime + duration;
+    currentStartTime = endTime;
+    return { ...scene, startTime, endTime, duration };
+  });
+
+  const maxTime = sceneTimings.length > 0 ? sceneTimings[sceneTimings.length - 1].endTime : 50;
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -45,17 +64,18 @@ export default function EditorPage({ params }: { params: { id: string } }) {
     }
   };
 
-  // Dynamic preview content based on time
+  // Dynamic preview content based on time and script
+  const activeScene = sceneTimings.find(s => currentTime >= s.startTime && currentTime < s.endTime) || sceneTimings[sceneTimings.length - 1];
+
   const getPreviewTitle = () => {
-    if (currentTime < 3.75) return "BẠN ĐÃ BAO GIỜ\nLÀM CRASH TRÌNH DUYỆT?";
-    if (currentTime < 12.5) return "LỖI USEEFFECT\nÁM ẢNH";
-    return "BÍ KÍP SỐ 1:\nKIỂM SOÁT DEPENDENCY";
+    if (!activeScene) return "NỘI DUNG\nVIDEO";
+    const title = activeScene.visualHook || `CẢNH QUAY ${activeScene.order + 1}`;
+    return title.substring(0, 40).toUpperCase() + (title.length > 40 ? "..." : "");
   };
 
   const getSubtitleText = () => {
-    if (currentTime < 3.75) return "Bạn đã bao giờ làm crash trình duyệt chỉ vì useEffect?";
-    if (currentTime < 12.5) return "Đừng lo, 90% anh em dev React đều từng dính chưởng này.";
-    return "Bí kíp số 1: Kiểm soát dependency array thật chặt chẽ.";
+    if (!activeScene) return "Nội dung lời thoại sẽ hiển thị ở đây.";
+    return activeScene.narration || "Nội dung lời thoại...";
   };
 
   return (
@@ -200,26 +220,27 @@ export default function EditorPage({ params }: { params: { id: string } }) {
 
           <div className="flex flex-col">
             <Track name="Video" icon={<Video className="w-3 h-3"/>}>
-              <Clip start={0} width={60} color="bg-blue-600" label="Scene 1" />
-              <Clip start={60} width={140} color="bg-blue-600/80" label="Scene 2" />
-              <Clip start={200} width={300} color="bg-blue-600" label="Scene 3" />
+              {sceneTimings.map((s, i) => (
+                <Clip key={`video-${s.id}`} start={s.startTime * 16} width={s.duration * 16 - 2} color={i % 2 === 0 ? "bg-blue-600" : "bg-blue-600/80"} label={`Scene ${i + 1}`} />
+              ))}
             </Track>
             <Track name="Text/Effect" icon={<Layers className="w-3 h-3"/>}>
-              <Clip start={10} width={40} color="bg-pink-600" label="Title Pop" />
-              <Clip start={220} width={100} color="bg-pink-600" label="Code Box" />
+              {sceneTimings.map((s, i) => (
+                <Clip key={`text-${s.id}`} start={s.startTime * 16 + 10} width={Math.max(20, s.duration * 16 - 20)} color="bg-pink-600" label="Effect" />
+              ))}
             </Track>
             <Track name="Subtitle" icon={<Type className="w-3 h-3"/>}>
-              <Clip start={0} width={60} color="bg-yellow-600" label="Bạn đã bao giờ..." />
-              <Clip start={60} width={140} color="bg-yellow-600" label="Đừng lo, 90%..." />
-              <Clip start={200} width={300} color="bg-yellow-600" label="Bí kíp số 1..." />
+              {sceneTimings.map((s, i) => (
+                <Clip key={`sub-${s.id}`} start={s.startTime * 16} width={s.duration * 16 - 2} color="bg-yellow-600" label={(s.narration || '').substring(0, 15) + '...'} />
+              ))}
             </Track>
             <Track name="Voice" icon={<Mic className="w-3 h-3"/>}>
-              <Clip start={0} width={55} color="bg-green-600" label="Voice 1" />
-              <Clip start={60} width={135} color="bg-green-600" label="Voice 2" />
-              <Clip start={200} width={290} color="bg-green-600" label="Voice 3" />
+              {sceneTimings.map((s, i) => (
+                <Clip key={`voice-${s.id}`} start={s.startTime * 16} width={s.duration * 16 - 5} color="bg-green-600" label={`Voice ${i + 1}`} />
+              ))}
             </Track>
             <Track name="Audio" icon={<Music className="w-3 h-3"/>}>
-              <Clip start={0} width={800} color="bg-purple-600" label="Lofi Chill Beat.mp3" />
+              <Clip start={0} width={maxTime * 16} color="bg-purple-600" label="Background Music.mp3" />
             </Track>
           </div>
         </div>
