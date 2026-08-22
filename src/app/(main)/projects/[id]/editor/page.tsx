@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,6 +9,55 @@ import { Play, Pause, SkipBack, SkipForward, Volume2, Type, Music, Image as Imag
 export default function EditorPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0); // in seconds
+  const maxTime = 50; // 50 seconds total for the mockup
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isPlaying) {
+      interval = setInterval(() => {
+        setCurrentTime((prev) => {
+          if (prev >= maxTime) {
+            setIsPlaying(false);
+            return maxTime;
+          }
+          return prev + 0.1;
+        });
+      }, 100);
+    }
+    return () => clearInterval(interval);
+  }, [isPlaying, maxTime]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `00:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
+  const handleSeek = (e: MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    // 120 is the width of the left track header column
+    const x = e.clientX - rect.left - 120; 
+    if (x >= 0) {
+      // 16 pixels = 1 second
+      const newTime = Math.max(0, Math.min(maxTime, x / 16));
+      setCurrentTime(newTime);
+    }
+  };
+
+  // Dynamic preview content based on time
+  const getPreviewTitle = () => {
+    if (currentTime < 3.75) return "BẠN ĐÃ BAO GIỜ\nLÀM CRASH TRÌNH DUYỆT?";
+    if (currentTime < 12.5) return "LỖI USEEFFECT\nÁM ẢNH";
+    return "BÍ KÍP SỐ 1:\nKIỂM SOÁT DEPENDENCY";
+  };
+
+  const getSubtitleText = () => {
+    if (currentTime < 3.75) return "Bạn đã bao giờ làm crash trình duyệt chỉ vì useEffect?";
+    if (currentTime < 12.5) return "Đừng lo, 90% anh em dev React đều từng dính chưởng này.";
+    return "Bí kíp số 1: Kiểm soát dependency array thật chặt chẽ.";
+  };
+
   return (
     <div className="h-[calc(100vh-8rem)] flex flex-col bg-[#0F0B1A] rounded-xl border border-white/10 overflow-hidden">
       
@@ -45,24 +94,28 @@ export default function EditorPage({ params }: { params: { id: string } }) {
           
           <div className="flex-1 flex items-center justify-center p-4">
             {/* The Video Canvas */}
-            <div className="aspect-[9/16] h-full max-h-[500px] bg-gradient-to-br from-purple-900 to-gray-900 rounded-lg shadow-2xl border border-white/10 relative overflow-hidden flex items-center justify-center">
+            <div className="aspect-[9/16] h-full max-h-[500px] w-full max-w-[281px] bg-gradient-to-br from-purple-900 to-gray-900 rounded-lg shadow-2xl border border-white/10 relative overflow-hidden flex items-center justify-center">
               <div className="text-center p-6 relative z-10">
-                <h1 className="text-3xl font-black text-white drop-shadow-lg leading-tight uppercase text-center stroke-black stroke-2" style={{textShadow: '2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000'}}>
-                  LỖI USEEFFECT<br/>ÁM ẢNH
+                <h1 className="text-2xl lg:text-3xl font-black text-white drop-shadow-lg leading-tight uppercase text-center stroke-black stroke-2" style={{textShadow: '2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000', whiteSpace: 'pre-line'}}>
+                  {getPreviewTitle()}
                 </h1>
               </div>
-              <div className="absolute bottom-10 left-0 right-0 text-center">
-                <span className="bg-yellow-400 text-black font-bold px-3 py-1 text-sm rounded">Subtitle Preview Here</span>
+              <div className="absolute bottom-10 left-4 right-4 text-center">
+                <span className="bg-yellow-400 text-black font-bold px-3 py-1 text-[11px] lg:text-xs rounded inline-block shadow-md">
+                  {getSubtitleText()}
+                </span>
               </div>
             </div>
           </div>
           
           {/* Playback Controls */}
-          <div className="h-12 border-t border-white/10 bg-[#0F0B1A] flex items-center justify-center gap-4 px-4">
-            <span className="text-xs font-mono text-gray-400 absolute left-4">00:00:15 / 00:00:50</span>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white"><SkipBack className="w-4 h-4" /></Button>
-            <Button size="icon" className="h-8 w-8 rounded-full bg-purple-600 hover:bg-purple-500 text-white"><Play className="w-4 h-4 ml-1" /></Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white"><SkipForward className="w-4 h-4" /></Button>
+          <div className="h-12 border-t border-white/10 bg-[#0F0B1A] flex items-center justify-center gap-4 px-4 relative">
+            <span className="text-xs font-mono text-gray-400 absolute left-4">{formatTime(currentTime)} / 00:00:50</span>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white" onClick={() => setCurrentTime(Math.max(0, currentTime - 5))}><SkipBack className="w-4 h-4" /></Button>
+            <Button size="icon" className="h-8 w-8 rounded-full bg-purple-600 hover:bg-purple-500 text-white" onClick={() => setIsPlaying(!isPlaying)}>
+              {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-1" />}
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white" onClick={() => setCurrentTime(Math.min(maxTime, currentTime + 5))}><SkipForward className="w-4 h-4" /></Button>
             <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white absolute right-4"><Volume2 className="w-4 h-4" /></Button>
           </div>
         </div>
@@ -113,18 +166,18 @@ export default function EditorPage({ params }: { params: { id: string } }) {
         </div>
 
         {/* Tracks Area */}
-        <div className="flex-1 overflow-auto relative custom-scrollbar">
+        <div className="flex-1 overflow-auto relative custom-scrollbar" onClick={handleSeek}>
           {/* Time Ruler */}
-          <div className="h-6 border-b border-white/5 sticky top-0 bg-[#0F0B1A] z-10 flex ml-[120px]">
+          <div className="h-6 border-b border-white/5 sticky top-0 bg-[#0F0B1A] z-10 flex ml-[120px] cursor-pointer hover:bg-white/5">
             {Array.from({length: 20}).map((_, i) => (
-              <div key={i} className="w-20 border-l border-white/10 text-[10px] text-gray-500 pl-1 pt-1">
+              <div key={i} className="w-20 border-l border-white/10 text-[10px] text-gray-500 pl-1 pt-1 flex-shrink-0">
                 00:{String(i * 5).padStart(2, '0')}
               </div>
             ))}
           </div>
           
-          {/* Playhead */}
-          <div className="absolute top-0 bottom-0 w-px bg-red-500 z-20 left-[320px] pointer-events-none">
+          {/* Playhead (red line) */}
+          <div className="absolute top-0 bottom-0 w-px bg-red-500 z-20 pointer-events-none transition-all duration-75" style={{ left: `${120 + currentTime * 16}px` }}>
             <div className="absolute -top-1 -left-1.5 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-red-500"></div>
           </div>
 
@@ -174,12 +227,14 @@ export default function EditorPage({ params }: { params: { id: string } }) {
 
 function Track({ name, icon, children }: { name: string, icon: React.ReactNode, children: React.ReactNode }) {
   return (
-    <div className="flex h-12 border-b border-white/5">
+    <div className="flex h-12 border-b border-white/5 relative">
       <div className="w-[120px] bg-[#1A1533] border-r border-white/10 flex items-center px-2 gap-2 text-xs text-gray-400 sticky left-0 z-10 shrink-0">
         {icon}
         <span className="truncate">{name}</span>
       </div>
-      <div className="flex-1 relative bg-[#0F0B1A]">
+      <div className="flex-1 relative bg-[#0F0B1A] overflow-hidden pointer-events-none">
+        {/* Child clips are pointer-events-auto so they can be hovered/clicked if needed, 
+            but the track itself allows clicks to pass through to the container for seeking */}
         {children}
       </div>
     </div>
@@ -189,7 +244,7 @@ function Track({ name, icon, children }: { name: string, icon: React.ReactNode, 
 function Clip({ start, width, color, label }: { start: number, width: number, color: string, label: string }) {
   return (
     <div 
-      className={`absolute top-1 bottom-1 rounded border border-white/20 ${color} px-2 py-1 overflow-hidden cursor-pointer hover:brightness-110`}
+      className={`absolute top-1 bottom-1 rounded border border-white/20 ${color} px-2 py-1 overflow-hidden pointer-events-auto transition-transform hover:scale-[1.02] cursor-grab active:cursor-grabbing`}
       style={{ left: `${start}px`, width: `${width}px` }}
     >
       <span className="text-[10px] text-white whitespace-nowrap drop-shadow-md font-medium leading-none">{label}</span>
