@@ -34,7 +34,7 @@ export default function SourcePage({ params }: { params: { id: string } }) {
       updateTranscript({
         id: '123',
         projectId: params.id,
-        source: manualText ? 'manual' : (textFile ? 'file' : 'url'),
+        source: manualText ? 'manual' : (textFile ? 'file' : 'api'),
         text: transcriptText,
         segments: [
           {
