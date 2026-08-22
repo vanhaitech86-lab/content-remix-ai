@@ -8,9 +8,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Link2, Upload, FileText, Type, CheckCircle, Youtube, Info, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useProjectStore } from '@/store/project-store';
 
 export default function SourcePage({ params }: { params: { id: string } }) {
   const router = useRouter();
+  const { updateTranscript } = useProjectStore();
+  
   const [consent, setConsent] = useState(false);
   const [url, setUrl] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -20,7 +23,28 @@ export default function SourcePage({ params }: { params: { id: string } }) {
 
   const handleAnalyze = () => {
     setIsAnalyzing(true);
+    
+    // Simulate extraction based on input
+    const uploadedFileName = mediaFile?.name || textFile?.name;
+    const transcriptText = manualText.trim() !== '' 
+      ? manualText 
+      : (uploadedFileName ? `[Nội dung được trích xuất từ file ${uploadedFileName}]` : 'Nội dung trích xuất từ URL...');
+      
     setTimeout(() => {
+      updateTranscript({
+        id: '123',
+        projectId: params.id,
+        source: manualText ? 'manual' : (textFile ? 'file' : 'url'),
+        text: transcriptText,
+        segments: [
+          {
+            id: '1',
+            text: transcriptText,
+            start: 0,
+            end: 10
+          }
+        ]
+      });
       setIsAnalyzing(false);
       router.push(`/projects/${params.id}/transcript`);
     }, 2000);

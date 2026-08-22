@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Download, Save, Trash2, Edit3, Plus, AlertTriangle, ArrowRight, Check } from 'lucide-react';
+import { useProjectStore } from '@/store/project-store';
 
 const mockSegments = [
   { id: 1, start: '00:00', end: '00:05', speaker: 'Speaker 1', text: 'Chào mừng các bạn đã quay trở lại với kênh của mình.', confidence: 0.98 },
@@ -18,7 +19,19 @@ const mockSegments = [
 
 export default function TranscriptPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const [segments, setSegments] = useState(mockSegments);
+  const { transcript } = useProjectStore();
+  
+  // Transform the actual transcript segments if they exist, otherwise use mock data
+  const initialSegments = transcript?.segments.map((seg, i) => ({
+    id: Number(seg.id) || i + 1,
+    start: '00:00',
+    end: '00:10', // Simplified formatting for mock
+    speaker: 'Speaker 1',
+    text: seg.text,
+    confidence: 0.95
+  })) || mockSegments;
+
+  const [segments, setSegments] = useState(initialSegments);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [saved, setSaved] = useState(false);
 
