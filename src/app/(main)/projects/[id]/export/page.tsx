@@ -32,15 +32,13 @@ export default function ExportPage({ params }: { params: { id: string } }) {
   };
 
   const handleDownloadVideo = () => {
-    const blob = new Blob(["Demo video content from Content Remix AI..."], { type: 'video/mp4' });
-    const url = URL.createObjectURL(blob);
+    // Tải về file mp4 mẫu thực sự từ thư mục public
     const a = document.createElement('a');
-    a.href = url;
+    a.href = '/demo_video.mp4';
     a.download = `video_render_${params.id}.mp4`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   };
 
   const handleDownloadSubtitles = () => {
