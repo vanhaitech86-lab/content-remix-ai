@@ -6,8 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Target, Users, Zap, Search, MessageSquare, Lightbulb, RefreshCw, BarChart2, Heart, Crosshair } from 'lucide-react';
 import Link from 'next/link';
+import { useProjectStore } from '@/store/project-store';
 
 export default function AnalysisPage({ params }: { params: { id: string } }) {
+  const { transcript } = useProjectStore();
+  
+  const mainTopic = transcript?.text ? transcript.text.substring(0, 50) + "..." : "Cách sử dụng React Hooks hiệu quả cho người mới";
+
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -38,11 +43,11 @@ export default function AnalysisPage({ params }: { params: { id: string } }) {
               <Crosshair className="w-5 h-5" />
               <h3 className="font-semibold text-lg">Chủ đề chính</h3>
             </div>
-            <p className="text-xl font-bold text-white leading-tight mb-2">Cách sử dụng React Hooks hiệu quả cho người mới</p>
+            <p className="text-xl font-bold text-white leading-tight mb-2">{mainTopic}</p>
             <div className="flex flex-wrap gap-2 mt-4">
-              <Badge className="bg-purple-500/20 text-purple-200">Lập trình</Badge>
-              <Badge className="bg-purple-500/20 text-purple-200">ReactJS</Badge>
-              <Badge className="bg-purple-500/20 text-purple-200">Tutorial</Badge>
+              <Badge className="bg-purple-500/20 text-purple-200">Tự động hóa</Badge>
+              <Badge className="bg-purple-500/20 text-purple-200">AI</Badge>
+              <Badge className="bg-purple-500/20 text-purple-200">Sáng tạo</Badge>
             </div>
           </Card>
 
