@@ -31,6 +31,44 @@ export default function ExportPage({ params }: { params: { id: string } }) {
     }, 200);
   };
 
+  const handleDownloadVideo = () => {
+    const blob = new Blob(["Demo video content from Content Remix AI..."], { type: 'video/mp4' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `video_render_${params.id}.mp4`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadSubtitles = () => {
+    const srtContent = `1\n00:00:00,000 --> 00:00:03,000\nChào mừng bạn đến với Content Remix AI\n\n2\n00:00:03,000 --> 00:00:05,000\nĐây là file phụ đề tự động.`;
+    const blob = new Blob([srtContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `subtitles.srt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadCaptions = () => {
+    const captionContent = `🔥 Khám phá bí kíp làm video siêu tốc cùng Content Remix AI!\n\n#ContentRemixAI #VideoCreator #AutoGenerate #Shorts`;
+    const blob = new Blob([captionContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `captions_and_hashtags.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="max-w-4xl mx-auto py-8">
       <div className="text-center mb-10">
@@ -168,7 +206,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
             <p className="text-green-200/70 mb-6">Video của bạn đã sẵn sàng để tải xuống và đăng tải.</p>
             
             <div className="grid grid-cols-2 gap-4">
-              <Button className="h-12 bg-purple-600 hover:bg-purple-500 text-white">
+              <Button onClick={handleDownloadVideo} className="h-12 bg-purple-600 hover:bg-purple-500 text-white">
                 <Download className="w-5 h-5 mr-2" /> Tải Video MP4
               </Button>
               <Button variant="outline" className="h-12 border-white/20 bg-white/5 hover:bg-white/10" onClick={() => router.push(`/projects/${params.id}/publish`)}>
@@ -180,14 +218,14 @@ export default function ExportPage({ params }: { params: { id: string } }) {
           <div className="max-w-2xl mx-auto">
             <h4 className="text-gray-400 font-medium mb-4">Tài nguyên đính kèm</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Button variant="outline" className="justify-start h-auto py-3 border-white/10 bg-[#1A1533] hover:bg-[#2D2545]">
+              <Button onClick={handleDownloadSubtitles} variant="outline" className="justify-start h-auto py-3 border-white/10 bg-[#1A1533] hover:bg-[#2D2545]">
                 <FileText className="w-5 h-5 text-blue-400 mr-3" />
                 <div className="text-left">
                   <div className="text-white font-medium">File Phụ đề (SRT/VTT)</div>
                   <div className="text-xs text-gray-400">Cho YouTube/Facebook</div>
                 </div>
               </Button>
-              <Button variant="outline" className="justify-start h-auto py-3 border-white/10 bg-[#1A1533] hover:bg-[#2D2545]">
+              <Button onClick={handleDownloadCaptions} variant="outline" className="justify-start h-auto py-3 border-white/10 bg-[#1A1533] hover:bg-[#2D2545]">
                 <FileText className="w-5 h-5 text-purple-400 mr-3" />
                 <div className="text-left">
                   <div className="text-white font-medium">Caption & Hashtags</div>
